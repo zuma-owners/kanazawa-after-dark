@@ -71,6 +71,7 @@ place:
 ```
 
 - 本文は「Local tip」まででOK。**Practical info の表・関連記事2本・SNS導線はテンプレートが自動で付ける**
+- 「3選」など複数の店を紹介する記事は `place:` の代わりに `places:`（リスト）を使う。店ごとに Practical info の表が出て、店ごとに `area` も書ける（例：`2026-11-13-kanazawa-local-cafes-english.md`）
 - 関連記事は「同じエリア → タグが近い → 新しい順」で自動選択。指定したいときは `related: ["slug-a", "slug-b"]`
 - Guide ページも `place` がある記事から自動で作られる。新しい店を書けば Guide にも載る
 - `src/content/articles/2026-11-12-sample-layout.md` は表示確認用のサンプル（`draft: true` なので本番には出ない）
