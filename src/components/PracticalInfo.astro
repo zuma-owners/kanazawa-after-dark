@@ -1,14 +1,16 @@
 ---
-import type { Article } from '../lib/articles';
+import type { Place } from '../lib/articles';
 import { areaBySlug } from '../consts';
 import FormattedDate from './FormattedDate.astro';
 
 interface Props {
-	place: NonNullable<Article['data']['place']>;
+	place: Place;
 	area?: string;
+	heading?: string;
 }
-const { place, area } = Astro.props;
-const areaName = areaBySlug(area);
+const { place, area, heading = 'Practical info' } = Astro.props;
+const hid = `info-${place.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+const areaName = areaBySlug(place.area ?? area);
 const rows: [string, string | undefined][] = [
 	['Name', place.nameJa ? `${place.name} (${place.nameJa})` : place.name],
 	['Area', areaName ? `${areaName.name} (${areaName.ja})` : undefined],
@@ -18,11 +20,12 @@ const rows: [string, string | undefined][] = [
 	['Payment', place.payment],
 	['Hours', place.hours],
 	['Closed', place.closed],
+	['Smoking', place.smoking],
 ];
 ---
 
-<section class="practical" aria-labelledby="practical-info">
-	<h2 id="practical-info">Practical info</h2>
+<section class="practical" aria-labelledby={hid}>
+	<h2 id={hid}>{heading}</h2>
 	<div class="table-wrap">
 		<table>
 			<tbody>

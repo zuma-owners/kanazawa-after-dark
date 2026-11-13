@@ -26,3 +26,8 @@ export function relatedArticles(current: Article, all: Article[], count = 2): Ar
 		.sort((a, b) => score(b) - score(a) || b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 	return [...manual, ...auto].slice(0, count);
 }
+
+export type Place = NonNullable<Article['data']['place']>;
+
+/** 記事が紹介している店（place 1軒、または places の複数軒） */
+export const placesOf = (a: Article): Place[] => (a.data.place ? [a.data.place] : (a.data.places ?? []));

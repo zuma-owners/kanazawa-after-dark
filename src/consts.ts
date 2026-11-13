@@ -23,6 +23,7 @@ export type Area = { slug: string; name: string; ja: string; blurb: string };
 export const AREAS: Area[] = [
 	{ slug: 'katamachi', name: 'Katamachi', ja: '片町', blurb: 'The busiest nightlife district in Kanazawa.' },
 	{ slug: 'kiguramachi', name: 'Kiguramachi', ja: '木倉町', blurb: 'A narrow street of small restaurants and bars next to Katamachi.' },
+	{ slug: 'kakinokibatake', name: 'Kakinokibatake', ja: '柿木畠', blurb: 'A small neighborhood of cafés and restaurants right next to Korinbo.' },
 	{ slug: 'korinbo', name: 'Korinbo', ja: '香林坊', blurb: 'Downtown Kanazawa, a short walk from Katamachi.' },
 	{ slug: 'kanazawa-station', name: 'Kanazawa Station', ja: '金沢駅周辺', blurb: 'Handy if you are arriving late or leaving early.' },
 	{ slug: 'other', name: 'Other areas', ja: 'その他', blurb: 'Good nights outside the main districts.' },

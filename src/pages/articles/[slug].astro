@@ -7,7 +7,7 @@ import FormattedDate from '../../components/FormattedDate.astro';
 import PracticalInfo from '../../components/PracticalInfo.astro';
 import { AUTHOR, SITE_TITLE, SITE_URL, areaBySlug } from '../../consts';
 import Base from '../../layouts/Base.astro';
-import { type Article, getArticles, relatedArticles, slugOf, urlOf } from '../../lib/articles';
+import { type Article, getArticles, placesOf, relatedArticles, slugOf, urlOf } from '../../lib/articles';
 
 export async function getStaticPaths() {
 	const all = await getArticles();
@@ -24,6 +24,7 @@ const { Content } = await render(article);
 const area = areaBySlug(d.area);
 const related = relatedArticles(article, all, 2);
 const url = new URL(urlOf(article), SITE_URL).href;
+const places = placesOf(article);
 
 const jsonLd: object[] = [
 	{
@@ -38,12 +39,11 @@ const jsonLd: object[] = [
 		publisher: { '@type': 'Organization', name: SITE_TITLE, url: SITE_URL },
 		mainEntityOfPage: url,
 		inLanguage: 'en',
-		...(d.place ? { about: { '@type': d.place.type, name: d.place.name } } : {}),
+		...(places.length ? { about: places.map((p) => ({ '@type': p.type, name: p.name })) } : {}),
 	},
 ];
-if (d.place) {
-	const p = d.place;
-	const unverified = (v?: string) => !v || /unverified/i.test(v);
+const unverified = (v?: string) => !v || /unverified/i.test(v);
+for (const p of places) {
 	jsonLd.push({
 		'@context': 'https://schema.org',
 		'@type': p.type,
@@ -110,7 +110,9 @@ if (d.place) {
 			<Content />
 		</div>
 
-		{d.place && <PracticalInfo place={d.place} area={d.area} />}
+		{places.map((p) => (
+			<PracticalInfo place={p} area={d.area} heading={d.places ? `Practical info: ${p.name}` : 'Practical info'} />
+		))}
 
 		{
 			related.length > 0 && (
