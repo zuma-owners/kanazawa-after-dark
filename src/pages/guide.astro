@@ -1,0 +1,112 @@
+---
+import FollowCta from '../components/FollowCta.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import { AREAS, GUIDE_UPDATED, SITE_TITLE, SITE_URL } from '../consts';
+import Base from '../layouts/Base.astro';
+import { getArticles, urlOf } from '../lib/articles';
+
+// 店の記事（place があるもの）が増えると、このページは自動でエリア別に並ぶ
+const places = (await getArticles()).filter((a) => a.data.place);
+const groups = AREAS.map((area) => ({ area, items: places.filter((a) => (a.data.area ?? 'other') === area.slug) })).filter(
+	(g) => g.items.length > 0,
+);
+const updated = new Date(GUIDE_UPDATED);
+const description =
+	'A local’s guide to Kanazawa nightlife: English-friendly bars, izakaya and late-night spots by area, each one visited and written up in full.';
+const jsonLd = [
+	{
+		'@context': 'https://schema.org',
+		'@type': 'Article',
+		headline: 'Kanazawa Nightlife Guide',
+		description,
+		dateModified: updated.toISOString(),
+		author: { '@type': 'Person', name: 'ZUMA' },
+		publisher: { '@type': 'Organization', name: SITE_TITLE, url: SITE_URL },
+	},
+	{
+		'@context': 'https://schema.org',
+		'@type': 'ItemList',
+		itemListElement: places.map((a, i) => ({
+			'@type': 'ListItem',
+			position: i + 1,
+			url: new URL(urlOf(a), SITE_URL).href,
+			name: a.data.place!.name,
+		})),
+	},
+];
+---
+
+<Base title="Kanazawa Nightlife Guide" description={description} jsonLd={jsonLd}>
+	<div class="prose">
+		<p class="eyebrow">The guide</p>
+		<h1>Kanazawa Nightlife Guide</h1>
+		<p class="muted small">Updated <FormattedDate date={updated} /></p>
+		<p>
+			Kanazawa is a small city, and most of its nightlife sits within walking distance of Katamachi. This guide collects every
+			place I have written about, grouped by area. Each one is somewhere I have actually been, and each links to the full
+			write-up with prices and tips on ordering in English.
+		</p>
+
+		{
+			groups.length === 0 && (
+				<p class="muted">
+					The first places are being written up now. Check back soon, or see <a href="/articles/">all articles</a>.
+				</p>
+			)
+		}
+
+		{
+			groups.map(({ area, items }) => (
+				<section aria-labelledby={`g-${area.slug}`}>
+					<h2 id={`g-${area.slug}`}>
+						{area.name} <span class="ja">{area.ja}</span>
+					</h2>
+					<p class="muted">{area.blurb}</p>
+					<ul class="places">
+						{items.map((a) => (
+							<li>
+								<h3>
+									<a href={urlOf(a)}>{a.data.place!.name}</a>
+								</h3>
+								<p>{a.data.guideSummary ?? a.data.description}</p>
+								<p class="small muted">
+									{[a.data.place!.priceRange, a.data.tags.slice(0, 2).join(', ')].filter(Boolean).join(' · ')}
+								</p>
+							</li>
+						))}
+					</ul>
+				</section>
+			))
+		}
+
+		<FollowCta />
+	</div>
+</Base>
+
+<style>
+	.ja {
+		font-family: system-ui, sans-serif;
+		font-size: 0.9rem;
+		color: var(--muted);
+		font-weight: 400;
+	}
+	.places {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		gap: 0.75rem;
+	}
+	.places li {
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		padding: 0.8rem 1rem;
+	}
+	.places h3 {
+		margin: 0 0 0.3rem;
+	}
+	.places p {
+		margin: 0 0 0.3rem;
+	}
+</style>

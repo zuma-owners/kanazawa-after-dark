@@ -1,0 +1,51 @@
+---
+import { SITE_TITLE, SOCIAL } from '../consts';
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+	<div class="wrap">
+		<p class="name">{SITE_TITLE}</p>
+		<p class="muted">Real nights out in Kanazawa, written by a local English coach.</p>
+		<nav aria-label="Footer">
+			<a href="/articles/">Articles</a>
+			<a href="/guide/">Nightlife Guide</a>
+			<a href="/about/">About</a>
+			<a href="/contact/">Contact</a>
+			{SOCIAL.url && <a href={SOCIAL.url} rel="me noopener" target="_blank">{SOCIAL.label}</a>}
+			<a href="/rss.xml">RSS</a>
+		</nav>
+		<p class="small muted">&copy; {year} {SITE_TITLE} / OWNERS LLC</p>
+	</div>
+</footer>
+
+<style>
+	.site-footer {
+		border-top: 1px solid var(--line);
+		margin-top: 4rem;
+		padding: 2rem 0 2.5rem;
+	}
+	.wrap {
+		max-width: var(--max);
+		margin: 0 auto;
+		padding: 0 var(--gutter);
+	}
+	.name {
+		font-family: var(--serif);
+		font-weight: 700;
+		margin: 0 0 0.25rem;
+	}
+	p {
+		margin: 0 0 1rem;
+	}
+	nav {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1.25rem;
+		margin-bottom: 1.25rem;
+	}
+	nav a {
+		color: var(--text);
+		font-size: 0.95rem;
+	}
+</style>

@@ -1,0 +1,205 @@
+---
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import ArticleCard from '../../components/ArticleCard.astro';
+import FollowCta from '../../components/FollowCta.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import PracticalInfo from '../../components/PracticalInfo.astro';
+import { AUTHOR, SITE_TITLE, SITE_URL, areaBySlug } from '../../consts';
+import Base from '../../layouts/Base.astro';
+import { type Article, getArticles, relatedArticles, slugOf, urlOf } from '../../lib/articles';
+
+export async function getStaticPaths() {
+	const all = await getArticles();
+	return all.map((article) => ({ params: { slug: slugOf(article) }, props: { article, all } }));
+}
+
+interface Props {
+	article: Article;
+	all: Article[];
+}
+const { article, all } = Astro.props;
+const d = article.data;
+const { Content } = await render(article);
+const area = areaBySlug(d.area);
+const related = relatedArticles(article, all, 2);
+const url = new URL(urlOf(article), SITE_URL).href;
+
+const jsonLd: object[] = [
+	{
+		'@context': 'https://schema.org',
+		'@type': 'Article',
+		headline: d.title,
+		alternativeHeadline: d.subtitle,
+		description: d.description,
+		datePublished: d.pubDate.toISOString(),
+		dateModified: (d.updatedDate ?? d.pubDate).toISOString(),
+		author: { '@type': 'Person', name: AUTHOR, url: new URL('/about/', SITE_URL).href },
+		publisher: { '@type': 'Organization', name: SITE_TITLE, url: SITE_URL },
+		mainEntityOfPage: url,
+		inLanguage: 'en',
+		...(d.place ? { about: { '@type': d.place.type, name: d.place.name } } : {}),
+	},
+];
+if (d.place) {
+	const p = d.place;
+	const unverified = (v?: string) => !v || /unverified/i.test(v);
+	jsonLd.push({
+		'@context': 'https://schema.org',
+		'@type': p.type,
+		name: p.name,
+		...(p.nameJa ? { alternateName: p.nameJa } : {}),
+		...(!unverified(p.address)
+			? { address: { '@type': 'PostalAddress', streetAddress: p.address, addressLocality: 'Kanazawa', addressRegion: 'Ishikawa', addressCountry: 'JP' } }
+			: {}),
+		...(p.priceRange ? { priceRange: p.priceRange } : {}),
+		...(p.website ? { sameAs: [p.website] } : {}),
+		url,
+	});
+}
+---
+
+<Base title={d.title} description={d.description} image={d.heroImage} type="article" jsonLd={jsonLd}>
+	<article class="prose">
+		<header class="head">
+			<p class="eyebrow">{area ? `${area.name} · ${area.ja}` : 'Kanazawa'}</p>
+			<h1>{d.title}</h1>
+			<p class="subtitle">{d.subtitle}</p>
+			<p class="meta small muted">
+				By <a href="/about/">{AUTHOR}</a> · <FormattedDate date={d.pubDate} />
+				{
+					d.updatedDate && (
+						<>
+							{' '}
+							· Updated <FormattedDate date={d.updatedDate} />
+						</>
+					)
+				}
+			</p>
+			{
+				d.tags.length > 0 && (
+					<ul class="tags">
+						{d.tags.map((t) => (
+							<li>
+								<a href={`/articles/?tag=${encodeURIComponent(t)}`}>{t}</a>
+							</li>
+						))}
+					</ul>
+				)
+			}
+		</header>
+
+		{
+			d.heroImage && (
+				<figure class="hero">
+					<Image
+						src={d.heroImage}
+						alt={d.heroAlt ?? ''}
+						widths={[480, 800, 1200]}
+						sizes="(min-width: 720px) 680px, 100vw"
+						format="webp"
+						quality={75}
+						loading="eager"
+						fetchpriority="high"
+					/>
+				</figure>
+			)
+		}
+
+		<div class="content">
+			<Content />
+		</div>
+
+		{d.place && <PracticalInfo place={d.place} area={d.area} />}
+
+		{
+			related.length > 0 && (
+				<section class="related" aria-labelledby="related">
+					<h2 id="related">Keep reading</h2>
+					<div class="related-grid">
+						{related.map((a) => (
+							<ArticleCard article={a} />
+						))}
+					</div>
+				</section>
+			)
+		}
+
+		<FollowCta />
+	</article>
+</Base>
+
+<style>
+	.head {
+		margin-bottom: 1.25rem;
+	}
+	.subtitle {
+		font-size: 1.15rem;
+		color: var(--muted);
+		margin: 0 0 0.8rem;
+		line-height: 1.5;
+	}
+	.meta {
+		margin: 0 0 0.6rem;
+	}
+	.tags {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+	.tags a {
+		display: inline-block;
+		font-size: 0.8rem;
+		padding: 0.1rem 0.6rem;
+		border: 1px solid var(--line);
+		border-radius: 999px;
+		color: var(--muted);
+		text-decoration: none;
+	}
+	.tags a:hover {
+		color: var(--text);
+		border-color: var(--accent);
+	}
+	.hero {
+		margin: 0 calc(-1 * var(--gutter)) 1.5rem;
+	}
+	.hero img {
+		width: 100%;
+		display: block;
+	}
+	@media (min-width: 720px) {
+		.hero {
+			margin: 0 0 1.75rem;
+		}
+		.hero img {
+			border-radius: 10px;
+		}
+	}
+	.content :global(img) {
+		border-radius: 8px;
+		margin: 0.5rem 0;
+	}
+	.content :global(p) {
+		margin: 0 0 1.1rem;
+	}
+	.content :global(.table-scroll),
+	.content :global(table) {
+		display: block;
+		overflow-x: auto;
+	}
+	.related {
+		margin-top: 2.5rem;
+	}
+	.related-grid {
+		display: grid;
+		gap: 1rem;
+	}
+	@media (min-width: 620px) {
+		.related-grid {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+</style>

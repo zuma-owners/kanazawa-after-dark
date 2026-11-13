@@ -1,0 +1,128 @@
+---
+import ArticleCard from '../../components/ArticleCard.astro';
+import { AREAS } from '../../consts';
+import Base from '../../layouts/Base.astro';
+import { getArticles } from '../../lib/articles';
+
+const articles = await getArticles();
+const usedAreas = AREAS.filter((a) => articles.some((x) => x.data.area === a.slug));
+const tags = [...new Set(articles.flatMap((a) => a.data.tags))].sort();
+---
+
+<Base
+	title="Articles"
+	description="Every Kanazawa night I have written up: English-friendly bars, izakaya and late-night spots, filterable by area and type."
+>
+	<p class="eyebrow">All articles</p>
+	<h1>Nights out in Kanazawa</h1>
+	<p class="muted lead">Places I have been to myself. Filter by area or by type.</p>
+
+	<div class="filters" data-filters hidden>
+		{
+			usedAreas.length > 0 && (
+				<div class="row" role="group" aria-label="Area">
+					<button type="button" data-area="" aria-pressed="true">All areas</button>
+					{usedAreas.map((a) => (
+						<button type="button" data-area={a.slug} aria-pressed="false">
+							{a.name}
+						</button>
+					))}
+				</div>
+			)
+		}
+		{
+			tags.length > 0 && (
+				<div class="row" role="group" aria-label="Type">
+					<button type="button" data-tag="" aria-pressed="true">All types</button>
+					{tags.map((t) => (
+						<button type="button" data-tag={t} aria-pressed="false">
+							{t}
+						</button>
+					))}
+				</div>
+			)
+		}
+	</div>
+
+	<div class="grid" data-list>
+		{articles.map((a, i) => <ArticleCard article={a} eager={i < 2} />)}
+	</div>
+	<p class="muted" data-empty hidden>Nothing here yet for that filter. <a href="/articles/">Show everything</a>.</p>
+	{articles.length === 0 && <p class="muted">The first articles are on the way.</p>}
+</Base>
+
+<script>
+	const box = document.querySelector<HTMLElement>('[data-filters]');
+	if (box) {
+		box.hidden = false;
+		const params = new URLSearchParams(location.search);
+		const state = { area: params.get('area') ?? '', tag: params.get('tag') ?? '' };
+		const cards = [...document.querySelectorAll<HTMLElement>('[data-list] > .card')];
+		const empty = document.querySelector<HTMLElement>('[data-empty]');
+		const apply = () => {
+			let shown = 0;
+			for (const c of cards) {
+				const ok =
+					(!state.area || c.dataset.area === state.area) &&
+					(!state.tag || (c.dataset.tags ?? '').split(',').includes(state.tag));
+				c.hidden = !ok;
+				if (ok) shown++;
+			}
+			if (empty) empty.hidden = shown > 0 || cards.length === 0;
+			box.querySelectorAll<HTMLButtonElement>('button').forEach((b) => {
+				const key = 'area' in b.dataset ? 'area' : 'tag';
+				b.setAttribute('aria-pressed', String(b.dataset[key] === state[key as 'area' | 'tag']));
+			});
+			const q = new URLSearchParams();
+			if (state.area) q.set('area', state.area);
+			if (state.tag) q.set('tag', state.tag);
+			history.replaceState(null, '', q.toString() ? `?${q}` : location.pathname);
+		};
+		box.addEventListener('click', (e) => {
+			const b = (e.target as HTMLElement).closest('button');
+			if (!b) return;
+			if ('area' in b.dataset) state.area = b.dataset.area ?? '';
+			else state.tag = b.dataset.tag ?? '';
+			apply();
+		});
+		apply();
+	}
+</script>
+
+<style>
+	.lead {
+		margin: 0 0 1.25rem;
+	}
+	.filters {
+		display: grid;
+		gap: 0.5rem;
+		margin-bottom: 1.5rem;
+	}
+	.row {
+		display: flex;
+		gap: 0.4rem;
+		overflow-x: auto;
+		padding-bottom: 0.2rem;
+		scrollbar-width: thin;
+	}
+	button {
+		flex: none;
+		font: inherit;
+		font-size: 0.85rem;
+		color: var(--muted);
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: 999px;
+		padding: 0.3rem 0.8rem;
+		cursor: pointer;
+	}
+	button[aria-pressed='true'] {
+		color: var(--bg);
+		background: var(--accent);
+		border-color: var(--accent);
+		font-weight: 700;
+	}
+	:global(.card[hidden]) {
+		display: none;
+	}
+</style>

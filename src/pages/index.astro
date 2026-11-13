@@ -1,0 +1,141 @@
+---
+import ArticleCard from '../components/ArticleCard.astro';
+import { AREAS, SITE_DESCRIPTION, SITE_TAGLINE, SITE_TITLE, SITE_URL } from '../consts';
+import Base from '../layouts/Base.astro';
+import { getArticles } from '../lib/articles';
+
+const articles = await getArticles();
+const latest = articles.slice(0, 6);
+const count = (slug: string) => articles.filter((a) => a.data.area === slug).length;
+const jsonLd = [{ '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_TITLE, url: SITE_URL, inLanguage: 'en' }];
+---
+
+<Base title={SITE_TITLE} description={SITE_DESCRIPTION} jsonLd={jsonLd}>
+	<section class="intro">
+		<p class="eyebrow">Kanazawa, Japan</p>
+		<h1>Where to drink in Kanazawa, in English.</h1>
+		<p class="tag">{SITE_TAGLINE}</p>
+		<p class="muted">
+			I'm ZUMA, an English coach living in Kanazawa. Every place here is somewhere I have been myself, with notes on how
+			easy it is to order in English. <a href="/about/">More about me</a>.
+		</p>
+	</section>
+
+	<section aria-labelledby="latest">
+		<div class="sec-head">
+			<h2 id="latest">Latest</h2>
+			{articles.length > 0 && <a href="/articles/">All articles →</a>}
+		</div>
+		{
+			latest.length > 0 ? (
+				<div class="grid">
+					{latest.map((a, i) => (
+						<ArticleCard article={a} eager={i < 2} />
+					))}
+				</div>
+			) : (
+				<p class="muted">The first articles are on the way.</p>
+			)
+		}
+	</section>
+
+	<section aria-labelledby="areas">
+		<div class="sec-head">
+			<h2 id="areas">Explore by area</h2>
+			<a href="/guide/">Nightlife Guide →</a>
+		</div>
+		<ul class="areas">
+			{
+				AREAS.map((a) => (
+					<li>
+						<a href={`/articles/?area=${a.slug}`}>
+							<span class="an">
+								{a.name} <span class="ja">{a.ja}</span>
+							</span>
+							<span class="ab">{a.blurb}</span>
+							<span class="ac">{count(a.slug) === 1 ? '1 place' : `${count(a.slug)} places`}</span>
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</section>
+</Base>
+
+<style>
+	.intro {
+		padding: 1.5rem 0 1rem;
+		max-width: 720px;
+	}
+	.tag {
+		font-size: 1.15rem;
+		margin: 0 0 0.75rem;
+	}
+	.sec-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-top: 2.25rem;
+	}
+	.sec-head h2 {
+		margin: 0 0 0.9rem;
+	}
+	.sec-head a {
+		font-size: 0.95rem;
+		white-space: nowrap;
+	}
+	.areas {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 0.75rem;
+	}
+	@media (min-width: 620px) {
+		.areas {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+	@media (min-width: 960px) {
+		.areas {
+			grid-template-columns: repeat(3, 1fr);
+		}
+	}
+	.areas a {
+		display: grid;
+		gap: 0.15rem;
+		height: 100%;
+		padding: 0.9rem 1rem;
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		color: var(--text);
+		text-decoration: none;
+	}
+	.areas a:hover {
+		border-color: var(--accent);
+	}
+	.an {
+		font-family: var(--serif);
+		font-weight: 700;
+		font-size: 1.1rem;
+	}
+	.ja {
+		color: var(--muted);
+		font-family: system-ui, sans-serif;
+		font-weight: 400;
+		font-size: 0.85rem;
+		margin-left: 0.3rem;
+	}
+	.ab {
+		color: var(--muted);
+		font-size: 0.92rem;
+		line-height: 1.5;
+	}
+	.ac {
+		color: var(--accent);
+		font-size: 0.8rem;
+		margin-top: 0.2rem;
+	}
+</style>

@@ -1,0 +1,107 @@
+---
+import { Image } from 'astro:assets';
+import { areaBySlug } from '../consts';
+import { type Article, urlOf } from '../lib/articles';
+import FormattedDate from './FormattedDate.astro';
+
+interface Props {
+	article: Article;
+	eager?: boolean;
+}
+const { article, eager = false } = Astro.props;
+const d = article.data;
+const area = areaBySlug(d.area);
+---
+
+<article class="card" data-area={d.area ?? ''} data-tags={d.tags.join(',')}>
+	<a href={urlOf(article)} class="card-link">
+		{
+			d.heroImage ? (
+				<Image
+					src={d.heroImage}
+					alt={d.heroAlt ?? ''}
+					widths={[400, 700]}
+					sizes="(min-width: 760px) 340px, 100vw"
+					format="webp"
+					quality={72}
+					loading={eager ? 'eager' : 'lazy'}
+				/>
+			) : (
+				<div class="ph" aria-hidden="true" />
+			)
+		}
+		<div class="body">
+			<p class="meta">
+				{area && <span class="area">{area.name}</span>}
+				<FormattedDate date={d.pubDate} />
+				{d.draft && <span class="draft">DRAFT</span>}
+			</p>
+			<h3>{d.title}</h3>
+			<p class="sub">{d.subtitle}</p>
+		</div>
+	</a>
+</article>
+
+<style>
+	.card {
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: 12px;
+		overflow: hidden;
+	}
+	.card-link {
+		display: block;
+		color: inherit;
+		text-decoration: none;
+		height: 100%;
+	}
+	.card img,
+	.ph {
+		width: 100%;
+		height: auto;
+		aspect-ratio: 16 / 10;
+		object-fit: cover;
+		display: block;
+	}
+	.ph {
+		aspect-ratio: 16 / 5;
+		background: radial-gradient(circle at 75% 30%, #3a3020 0, transparent 40%), linear-gradient(160deg, #1b2335, #0e1320);
+	}
+	.body {
+		padding: 0.9rem 1rem 1.1rem;
+	}
+	.meta {
+		display: flex;
+		gap: 0.6rem;
+		align-items: center;
+		font-size: 0.8rem;
+		color: var(--muted);
+		margin: 0 0 0.35rem;
+	}
+	.area {
+		color: var(--accent);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+	}
+	.draft {
+		background: #7a2e2e;
+		color: #fff;
+		padding: 0 0.4rem;
+		border-radius: 4px;
+	}
+	h3 {
+		font-size: 1.15rem;
+		margin: 0 0 0.35rem;
+		line-height: 1.3;
+	}
+	.card-link:hover h3 {
+		color: var(--accent);
+	}
+	.sub {
+		margin: 0;
+		color: var(--muted);
+		font-size: 0.95rem;
+		line-height: 1.5;
+	}
+</style>

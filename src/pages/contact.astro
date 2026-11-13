@@ -1,0 +1,21 @@
+---
+import { CONTACT_EMAIL } from '../consts';
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Contact" description="Contact ZUMA of Kanazawa After Dark about articles, corrections or suggestions for places in Kanazawa.">
+	<div class="prose">
+		<p class="eyebrow">Contact</p>
+		<h1>Say hello</h1>
+		<p>For questions, corrections or suggestions, email me at:</p>
+		<p class="mail"><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
+		<p class="muted small">I read every message, though it may take a few days to reply.</p>
+	</div>
+</Base>
+
+<style>
+	.mail {
+		font-size: 1.15rem;
+		word-break: break-all;
+	}
+</style>

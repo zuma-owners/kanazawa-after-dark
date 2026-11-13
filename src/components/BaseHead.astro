@@ -1,0 +1,44 @@
+---
+import '../styles/global.css';
+import type { ImageMetadata } from 'astro';
+import { Font, getImage } from 'astro:assets';
+import DefaultOg from '../assets/og-default.png';
+import { SITE_TITLE } from '../consts';
+
+interface Props {
+	title: string;
+	description: string;
+	image?: ImageMetadata;
+	type?: 'website' | 'article';
+	jsonLd?: object[];
+}
+
+const { title, description, image = DefaultOg, type = 'website', jsonLd = [] } = Astro.props;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const og = await getImage({ src: image, width: 1200, format: 'jpg', quality: 80 });
+const ogURL = new URL(og.src, Astro.site);
+const fullTitle = title === SITE_TITLE ? title : `${title} | ${SITE_TITLE}`;
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" content="#0e1320" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="sitemap" href="/sitemap-index.xml" />
+<link rel="alternate" type="application/rss+xml" title={SITE_TITLE} href={new URL('rss.xml', Astro.site)} />
+<Font cssVariable="--font-atkinson" preload />
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalURL} />
+
+<meta property="og:site_name" content={SITE_TITLE} />
+<meta property="og:type" content={type} />
+<meta property="og:url" content={canonicalURL} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={ogURL} />
+<meta property="og:locale" content="en_US" />
+<meta name="twitter:card" content="summary_large_image" />
+
+{jsonLd.map((d) => <script type="application/ld+json" set:html={JSON.stringify(d)} />)}

@@ -1,0 +1,46 @@
+---
+import { SITE_TITLE, SITE_URL, SOCIAL } from '../consts';
+import Base from '../layouts/Base.astro';
+
+const jsonLd = [
+	{
+		'@context': 'https://schema.org',
+		'@type': 'Person',
+		name: 'ZUMA',
+		jobTitle: 'English coach',
+		homeLocation: { '@type': 'Place', name: 'Kanazawa, Ishikawa, Japan' },
+		url: new URL('/about/', SITE_URL).href,
+		...(SOCIAL.url ? { sameAs: [SOCIAL.url] } : {}),
+	},
+];
+---
+
+<Base
+	title="About ZUMA"
+	description="I'm ZUMA, an English coach living in Kanazawa. I studied in the Philippines and Australia, and I write about the Kanazawa nights I actually enjoy."
+	jsonLd={jsonLd}
+>
+	<div class="prose">
+		<p class="eyebrow">About</p>
+		<h1>Hi, I'm ZUMA.</h1>
+		<p>
+			I live in Kanazawa and work as an English coach. Before that, I studied abroad in the Philippines and in Australia, and
+			those years taught me how much a good local friend matters when you are in a new country: someone who can tell you where
+			to go, what to order, and what to expect when you walk through the door.
+		</p>
+		<p>
+			{SITE_TITLE} is my attempt to be that friend for people visiting Kanazawa. I want to connect the people who live here with
+			the people who come from overseas, and the easiest place to start is often a bar counter or an izakaya table.
+		</p>
+		<h2>How I write these articles</h2>
+		<ul>
+			<li>I only write about places I have visited myself.</li>
+			<li>I describe what I ordered, what it cost, and how easy it was to get by in English.</li>
+			<li>Opening hours and addresses are checked online. Anything I could not confirm is marked "(unverified)".</li>
+			<li>Nobody pays to be on this site.</li>
+		</ul>
+		<p>
+			Questions, corrections, or a place you think I should try? <a href="/contact/">Get in touch</a>.
+		</p>
+	</div>
+</Base>

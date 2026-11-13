@@ -1,0 +1,29 @@
+---
+import { SOCIAL } from '../consts';
+---
+
+<aside class="follow" aria-label="Follow">
+	{
+		SOCIAL.url ? (
+			<p>
+				Follow me on <a href={SOCIAL.url} rel="me noopener" target="_blank">{SOCIAL.label}</a> for more Kanazawa nights.
+			</p>
+		) : (
+			<p>More Kanazawa nights are on the way. <a href="/articles/">Browse all articles</a> or check the <a href="/guide/">Nightlife Guide</a>.</p>
+		)
+	}
+</aside>
+
+<style>
+	.follow {
+		border: 1px solid var(--line);
+		border-left: 3px solid var(--accent);
+		background: var(--surface);
+		border-radius: 8px;
+		padding: 1rem 1.1rem;
+		margin: 2rem 0 0;
+	}
+	.follow p {
+		margin: 0;
+	}
+</style>
